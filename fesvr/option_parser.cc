@@ -14,9 +14,12 @@ void option_parser_t::option(char c, const char* s, int arg, std::function<void(
 const char* const* option_parser_t::parse(const char* const* argv0)
 {
   assert(argv0);
-  const char* const* argv = argv0 + 1;
+  const char* const* argv = argv0 + 1; //lxj// 略去argv[0]
+
+  //lxj// 检测到第一个不以'-'开头的命令行选项则结束
   for (const char* opt; (opt = *argv) != NULL && opt[0] == '-'; argv++)
   {
+    //lxj// 将命令行参数字符串与每一个已经注册的命令行选项进行匹配
     bool found = false;
     for (auto it = opts.begin(); !found && it != opts.end(); it++)
     {
@@ -26,9 +29,9 @@ const char* const* option_parser_t::parse(const char* const* argv0)
       if (chr_match || (str_match && (opt[2+slen] == '=' || opt[2+slen] == '\0')))
       {
         const char* optarg =
-          chr_match ? (opt[2] ? &opt[2] : NULL) :
-          opt[2+slen] ? &opt[3+slen] :
-          it->arg ? *(++argv) : NULL;
+          chr_match ? (opt[2] ? &opt[2] : NULL) : //lxj// 单字符选项的参数为紧跟字符之后的一个字符
+          opt[2+slen] ? &opt[3+slen] : //lxj// 字符串选项后紧跟等号和参数，中间不能由空格
+          it->arg ? *(++argv) : NULL; //lxj// 字符串选项也可以使用下一个命令行参数字符串
         if (optarg && !it->arg)
           error("no argument allowed for option", *argv0, opt);
         if (!optarg && it->arg)

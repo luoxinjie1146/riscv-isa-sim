@@ -15,6 +15,7 @@
 #  define D(x)
 #endif
 
+//lxj// 返回数字n的位宽
 // Return the number of bits wide that a field has to be to encode up to n
 // different values.
 // 1->0, 2->1, 3->2, 4->2

@@ -21,7 +21,7 @@ std::map<std::string, uint64_t> load_elf(const char* fn, memif_t* memif, reg_t* 
   assert(fd != -1);
   if (fstat(fd, &s) < 0)
     abort();
-  size_t size = s.st_size;
+  size_t size = s.st_size; //lxj// elf文件大小
 
   char* buf = (char*)mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
   assert(buf != MAP_FAILED);

@@ -11,13 +11,13 @@ class sim_t;
 typedef struct {
     // Size of program_buffer in 32-bit words, as exposed to the rest of the
     // world.
-    unsigned progbufsize;
-    unsigned max_bus_master_bits;
-    bool require_authentication;
-    unsigned abstract_rti;
-    bool support_hasel;
-    bool support_abstract_csr_access;
-    bool support_haltgroups;
+    unsigned progbufsize;  //lxj// 调试模式程序缓存大小，以字为单位，由'--dm-progsize=...'设置
+    unsigned max_bus_master_bits; //lxj// 调试模式主机接口位宽，由'--dm-sba=...'设置
+    bool require_authentication; //lxj// 调试模式需要调试器登录，由'--dm-auth'设置
+    unsigned abstract_rti; //lxj// 调试模式运行的周期数量，需要由抽象指令运行，由'--dm-abstract-rti=...'设置
+    bool support_hasel; //lxj// 由'--dm-no-hasel'设置
+    bool support_abstract_csr_access; //lxj// 调试模式不支持抽象登录，由'--dm-no-abstract-csr'设置
+    bool support_haltgroups; //lxj// 调试模式不支持多个halt，由'--dm-no-halt-groups'设置
 } debug_module_config_t;
 
 typedef struct {
@@ -136,7 +136,7 @@ class debug_module_t : public abstract_device_t
     unsigned debug_progbuf_start;
 
     static const unsigned debug_abstract_size = 12;
-    unsigned debug_abstract_start;
+    unsigned debug_abstract_start; //lxj// 调试程序的虚拟地址
     // R/W this through custom registers, to allow debuggers to test that
     // functionality.
     unsigned custom_base;
@@ -147,7 +147,7 @@ class debug_module_t : public abstract_device_t
 
     sim_t *sim;
 
-    uint8_t debug_rom_whereto[4];
+    uint8_t debug_rom_whereto[4]; //lxj// 调试程序的物理地址
     uint8_t debug_abstract[debug_abstract_size * 4];
     uint8_t *program_buffer;
     uint8_t dmdata[datasize * 4];
@@ -155,7 +155,7 @@ class debug_module_t : public abstract_device_t
     std::vector<hart_debug_state_t> hart_state;
     uint8_t debug_rom_flags[1024];
 
-    void write32(uint8_t *rom, unsigned int index, uint32_t value);
+    void write32(uint8_t *rom, unsigned int index, uint32_t value); //lxj// 在rom的第index字节写入value
     uint32_t read32(uint8_t *rom, unsigned int index);
 
     void sb_autoincrement();
@@ -180,7 +180,7 @@ class debug_module_t : public abstract_device_t
 
     processor_t *processor(unsigned hartid) const;
     bool hart_selected(unsigned hartid) const;
-    void reset();
+    void reset(); //lxj// 复位结构体
     bool perform_abstract_command();
 
     bool abstract_command_completed;

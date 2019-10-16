@@ -14,6 +14,7 @@
 #include <memory>
 #include "../VERSION"
 
+//lxj// 打印帮助信息
 static void help(int exit_code = 1)
 {
   fprintf(stderr, "Spike RISC-V ISA Simulator " SPIKE_VERSION "\n\n");
@@ -63,19 +64,23 @@ static void help(int exit_code = 1)
   exit(exit_code);
 }
 
+//lxj// 打印帮助提示信息
 static void suggest_help()
 {
   fprintf(stderr, "Try 'spike --help' for more information.\n");
   exit(1);
 }
 
+//lxj// 注册可用的存储器区域
 static std::vector<std::pair<reg_t, mem_t*>> make_mems(const char* arg)
 {
   // handle legacy mem argument
   char* p;
   auto mb = strtoull(arg, &p, 0);
+
+  //lxj// p为空字符串，表示一次全部转换结束，arg为一个数
   if (*p == 0) {
-    reg_t size = reg_t(mb) << 20;
+    reg_t size = reg_t(mb) << 20; //lxj// 以1MiB为单位
     if (size != (size_t)size)
       throw std::runtime_error("Size would overflow size_t");
     return std::vector<std::pair<reg_t, mem_t*>>(1, std::make_pair(reg_t(DRAM_BASE), new mem_t(size)));
@@ -88,7 +93,7 @@ static std::vector<std::pair<reg_t, mem_t*>> make_mems(const char* arg)
     if (!*p || *p != ':')
       help();
     auto size = strtoull(p + 1, &p, 0);
-    if ((size | base) % PGSIZE != 0)
+    if ((size | base) % PGSIZE != 0) //lxj// 4KiB对齐
       help();
     res.push_back(std::make_pair(reg_t(base), new mem_t(size)));
     if (!*p)
@@ -102,27 +107,28 @@ static std::vector<std::pair<reg_t, mem_t*>> make_mems(const char* arg)
 
 int main(int argc, char** argv)
 {
-  bool debug = false;
-  bool halted = false;
-  bool histogram = false;
-  bool log = false;
-  bool dump_dts = false;
-  bool dtb_enabled = true;
-  size_t nprocs = 1;
-  reg_t start_pc = reg_t(-1);
-  std::vector<std::pair<reg_t, mem_t*>> mems;
-  std::vector<std::pair<reg_t, abstract_device_t*>> plugin_devices;
-  std::unique_ptr<icache_sim_t> ic;
-  std::unique_ptr<dcache_sim_t> dc;
-  std::unique_ptr<cache_sim_t> l2;
-  bool log_cache = false;
-  bool log_commits = false;
-  std::function<extension_t*()> extension;
-  const char* isa = DEFAULT_ISA;
-  const char* varch = DEFAULT_VARCH;
-  uint16_t rbb_port = 0;
-  bool use_rbb = false;
-  unsigned dmi_rti = 0;
+  //lxj// 变量声明
+  bool debug = false; //lxj// 调试模式，由'-d'设置
+  bool halted = false; //lxj// 由'-H'设置
+  bool histogram = false; //lxj// 直方图模式，由'-h'设置
+  bool log = false; //lxj// 生成指令执行日志，由'-l'设置
+  bool dump_dts = false; //lxj// 打印设备树并退出，由'--dump-dts'设置
+  bool dtb_enabled = true; //lxj// 将设备树写入存储器，由'--disable-dtb设置'
+  size_t nprocs = 1; //lxj// 由'-pn'设置
+  reg_t start_pc = reg_t(-1); //lxj// 程序开始执行的地址，覆盖ELF文件的入口地址，由'--pc=...'设置
+  std::vector<std::pair<reg_t, mem_t*>> mems; //lxj// 可用的存储器。reg_t为基地址，默认为0x8000_0000~0x8080_0000。由'-mn'或'-ma:n,...'设置
+  std::vector<std::pair<reg_t, abstract_device_t*>> plugin_devices; //lxj// MMIO设备。reg_t为基地址，由'--device=p:a:b'设置，参数b可选，需要先注册MMIO
+  std::unique_ptr<icache_sim_t> ic; //lxj// 由'--ic=s:w:b'设置，s、b必须为2的幂，s!=0，b>8
+  std::unique_ptr<dcache_sim_t> dc; //lxj// 由'--dc=s:w:b'设置，s、b必须为2的幂，s!=0，b>8
+  std::unique_ptr<cache_sim_t> l2; //lxj// 由'--l2=s:w:b'设置，s、b必须为2的幂，s!=0，b>8
+  bool log_cache = false; //lxj// 由'--log-cache-miss'设置
+  bool log_commits = false; //lxj// 由'--log-commits'设置
+  std::function<extension_t*()> extension; //lxj// 扩展行为，由'--extension=...'设置，在扩展库中查找
+  const char* isa = DEFAULT_ISA; //lxj// 支持的指令集，由'--isa=rv...'设置
+  const char* varch = DEFAULT_VARCH; //lxj// 矢量指令集的vm，由'--varch=v...:e...:s...'设置
+  uint16_t rbb_port = 0; //lxj// 监听的端口，由'--rbb_port=...'设置
+  bool use_rbb = false; //lxj// 监听，由'--rbb_port=...'设置
+  unsigned dmi_rti = 0; //lxj// 调试模式测试运行的循环数量，需要DMI，由'--dmi-rti=...'设置
   debug_module_config_t dm_config = {
     .progbufsize = 2,
     .max_bus_master_bits = 0,
@@ -132,8 +138,10 @@ int main(int argc, char** argv)
     .support_abstract_csr_access = true,
     .support_haltgroups = true
   };
-  std::vector<int> hartids;
+  std::vector<int> hartids; //lxj// 已注册的hart id，构造sim_t后清除，默认为0,1,...，由'--hartid=a,b,...'设置
 
+  //lxj// 命令行选项行为函数声明
+  //lxj// 分析并提取hart id
   auto const hartids_parser = [&](const char *s) {
     std::string const str(s);
     std::stringstream stream(str);
@@ -146,6 +154,7 @@ int main(int argc, char** argv)
     }
   };
 
+  //lxj// 语法分析并初始化MMIO参数
   auto const device_parser = [&plugin_devices](const char *s) {
     const std::string str(s);
     std::istringstream stream(str);
@@ -189,8 +198,10 @@ int main(int argc, char** argv)
     plugin_devices.emplace_back(base, new mmio_plugin_device_t(name, args));
   };
 
+  //lxj// 初始化命令行选项语法分析器
   option_parser_t parser;
   parser.help(&suggest_help);
+  //lxj// 绑定所有命令行选项及其行为
   parser.option('h', "help", 0, [&](const char* s){help(0);});
   parser.option('d', 0, 0, [&](const char* s){debug = true;});
   parser.option('g', 0, 0, [&](const char* s){histogram = true;});
@@ -212,6 +223,8 @@ int main(int argc, char** argv)
   parser.option(0, "extension", 1, [&](const char* s){extension = find_extension(s);});
   parser.option(0, "dump-dts", 0, [&](const char *s){dump_dts = true;});
   parser.option(0, "disable-dtb", 0, [&](const char *s){dtb_enabled = false;});
+  //lxj// 需要保证在扩展库中实现mmio_plugin_registeration_t中的函数，并实现注册函数。
+  //lxj// 需要保证在扩展库中实现extension_t子类，调用REGISTER_EXTENSION宏，利用静态实例注册扩展指令集
   parser.option(0, "extlib", 1, [&](const char *s){
     void *lib = dlopen(s, RTLD_NOW | RTLD_GLOBAL);
     if (lib == NULL) {

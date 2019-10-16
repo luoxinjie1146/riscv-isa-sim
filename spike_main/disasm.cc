@@ -346,6 +346,7 @@ disassembler_t::disassembler_t(int xlen)
   const uint32_t mask_rvc_imm = mask_rvc_rs2 | 0x1000UL;
   const uint32_t mask_nf = 0x7Ul << 29;
 
+  //lxj// 生成指令操作码和掩码
   #define DECLARE_INSN(code, match, mask) \
    const uint32_t match_##code = match; \
    const uint32_t mask_##code = mask;

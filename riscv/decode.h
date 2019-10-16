@@ -32,7 +32,7 @@ typedef unsigned __int128 uint128_t;
 
 const int NXPR = 32;
 const int NFPR = 32;
-const int NVPR = 32;
+const int NVPR = 32; //lxj// 矢量寄存器数量
 const int NCSR = 4096;
 
 #define X_RA 1
@@ -205,8 +205,8 @@ private:
               if(rm > 4) throw trap_illegal_instruction(0); \
               rm; })
 
-#define get_field(reg, mask) (((reg) & (decltype(reg))(mask)) / ((mask) & ~((mask) << 1)))
-#define set_field(reg, mask, val) (((reg) & ~(decltype(reg))(mask)) | (((decltype(reg))(val) * ((mask) & ~((mask) << 1))) & (decltype(reg))(mask)))
+#define get_field(reg, mask) (((reg) & (decltype(reg))(mask)) / ((mask) & ~((mask) << 1))) //lxj// 获得掩码对应位置的值
+#define set_field(reg, mask, val) (((reg) & ~(decltype(reg))(mask)) | (((decltype(reg))(val) * ((mask) & ~((mask) << 1))) & (decltype(reg))(mask))) //lxj// 将val中置位的值写入reg中
 
 #define require(x) if (unlikely(!(x))) throw trap_illegal_instruction(0)
 #define require_privilege(p) require(STATE.prv >= (p))
@@ -229,7 +229,7 @@ private:
 #define sext32(x) ((sreg_t)(int32_t)(x))
 #define zext32(x) ((reg_t)(uint32_t)(x))
 #define sext_xlen(x) (((sreg_t)(x) << (64-xlen)) >> (64-xlen))
-#define zext_xlen(x) (((reg_t)(x) << (64-xlen)) >> (64-xlen))
+#define zext_xlen(x) (((reg_t)(x) << (64-xlen)) >> (64-xlen)) //lxj// 零扩展至64位
 
 #define set_pc(x) \
   do { p->check_pc_alignment(x); \

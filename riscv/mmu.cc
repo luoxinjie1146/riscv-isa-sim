@@ -75,6 +75,7 @@ tlb_entry_t mmu_t::fetch_slow_path(reg_t vaddr)
   }
 }
 
+//lxj// 读取bytes中len字节的数据
 reg_t reg_from_bytes(size_t len, const uint8_t* bytes)
 {
   switch (len) {
@@ -111,6 +112,7 @@ void mmu_t::load_slow_path(reg_t addr, reg_t len, uint8_t* bytes)
       tracer.trace(paddr, len, LOAD);
     else
       refill_tlb(addr, paddr, host_addr, LOAD);
+  //lxj// 若addr不在内存中
   } else if (!sim->mmio_load(paddr, len, bytes)) {
     throw trap_load_access_fault(addr);
   }

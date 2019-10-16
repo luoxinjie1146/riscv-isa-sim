@@ -41,10 +41,12 @@ void memif_t::read(addr_t addr, size_t len, void* bytes)
 
 void memif_t::write(addr_t addr, size_t len, const void* bytes)
 {
-  size_t align = cmemif->chunk_align();
+  size_t align = cmemif->chunk_align(); //lxj// sim_t::chunk_align() = 8
+
+  //lxj// 首地址不对齐
   if (len && (addr & (align-1)))
   {
-    size_t this_len = std::min(len, align - size_t(addr & (align-1)));
+    size_t this_len = std::min(len, align - size_t(addr & (align-1))); //lxj// 未对齐部分的长度
     uint8_t chunk[align];
 
     cmemif->read_chunk(addr & ~(align-1), align, chunk);

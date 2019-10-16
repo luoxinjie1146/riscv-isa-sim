@@ -73,8 +73,8 @@ class disasm_insn_t
     return s.str();
   }
 
-  uint32_t get_match() const { return match; }
-  uint32_t get_mask() const { return mask; }
+  uint32_t get_match() const { return match; } //lxj// 返回指令操作码
+  uint32_t get_mask() const { return mask; } //lxj// 返回指令掩码
 
  private:
   uint32_t match;
@@ -92,7 +92,7 @@ class disassembler_t
   std::string disassemble(insn_t insn) const;
   const disasm_insn_t* lookup(insn_t insn) const;
 
-  void add_insn(disasm_insn_t* insn);
+  void add_insn(disasm_insn_t* insn); //lxj// 将指令添加入哈希表chain中
 
  private:
   static const int HASH_SIZE = 256;

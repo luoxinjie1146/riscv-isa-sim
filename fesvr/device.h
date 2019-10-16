@@ -34,7 +34,7 @@ class command_t
 class device_t
 {
  public:
-  device_t();
+  device_t(); //lxj// 初始化，注册指令名称和行为，最后一个为identify
   virtual ~device_t() {}
   virtual const char* identity() = 0;
   virtual void tick() {}
@@ -53,7 +53,7 @@ class device_t
   void handle_null_command(command_t cmd);
   void handle_identify(command_t cmd);
 
-  std::vector<command_func_t> command_handlers;
+  std::vector<command_func_t> command_handlers; //lxj// 指令行为
   std::vector<std::string> command_names;
 };
 

@@ -27,6 +27,8 @@ class memtracer_list_t : public memtracer_t
 {
  public:
   bool empty() { return list.empty(); }
+  
+  //lxj// 查找设备中的begin~end地址区间是否可以type访问（LOAD/STORE/FETCH）
   bool interested_in_range(uint64_t begin, uint64_t end, access_type type)
   {
     for (std::vector<memtracer_t*>::iterator it = list.begin(); it != list.end(); ++it)
@@ -39,6 +41,7 @@ class memtracer_list_t : public memtracer_t
     for (std::vector<memtracer_t*>::iterator it = list.begin(); it != list.end(); ++it)
       (*it)->trace(addr, bytes, type);
   }
+  //lxj// 注册memtracer
   void hook(memtracer_t* h)
   {
     list.push_back(h);

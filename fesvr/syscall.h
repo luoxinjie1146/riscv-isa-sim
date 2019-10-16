@@ -17,11 +17,11 @@ class memif_t;
 class fds_t
 {
  public:
-  reg_t alloc(int fd);
+  reg_t alloc(int fd); //lxj// 重定向输入输出流
   void dealloc(reg_t fd);
   int lookup(reg_t fd);
  private:
-  std::vector<int> fds;
+  std::vector<int> fds; //lxj// 输入输出流，以-1结束
 };
 
 class syscall_t : public device_t
@@ -29,7 +29,7 @@ class syscall_t : public device_t
  public:
   syscall_t(htif_t*);
 
-  void set_chroot(const char* where);
+  void set_chroot(const char* where); //lxj// 进入根目录
   
  private:
   const char* identity() { return "syscall_proxy"; }
@@ -42,7 +42,7 @@ class syscall_t : public device_t
   void handle_syscall(command_t cmd);
   void dispatch(addr_t mm);
 
-  std::string chroot;
+  std::string chroot; //lxj// 当前工作根目录
   std::string do_chroot(const char* fn);
   std::string undo_chroot(const char* fn);
 

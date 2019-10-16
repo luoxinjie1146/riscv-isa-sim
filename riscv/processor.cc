@@ -94,6 +94,7 @@ void processor_t::parse_varch_string(const char* s)
   std::string token;
   while (!str.empty() && token != str) {
     pos = str.find(delimiter);
+    //lxj// ":"不存在
     if (pos == std::string::npos){
       token = str;
     }else{
@@ -136,6 +137,7 @@ void processor_t::parse_isa_string(const char* str)
   max_xlen = 64;
   state.misa = reg_t(2) << 62;
 
+  //lxj// 分析32/64位
   if (strncmp(p, "rv32", 4) == 0)
     max_xlen = 32, state.misa = reg_t(1) << 30, p += 4;
   else if (strncmp(p, "rv64", 4) == 0)
@@ -143,6 +145,7 @@ void processor_t::parse_isa_string(const char* str)
   else if (strncmp(p, "rv", 2) == 0)
     p += 2;
 
+  //lxj// 分析默认指令集
   if (!*p) {
     p = "imafdc";
   } else if (*p == 'g') { // treat "G" as "IMAFD"
@@ -159,10 +162,13 @@ void processor_t::parse_isa_string(const char* str)
   while (*p) {
     state.misa |= 1L << (*p - 'a');
 
+    //lxj// 分析标准指令集
     if (auto next = strchr(all_subsets, *p)) {
       all_subsets = next + 1;
       p++;
-    } else if (*p == 'x') {
+    } 
+    //lxj// 分析扩展指令集
+    else if (*p == 'x') {
       const char* ext = p+1, *end = ext;
       while (islower(*end))
         end++;
@@ -921,7 +927,9 @@ void processor_t::register_insn(insn_desc_t desc)
 
 void processor_t::build_opcode_map()
 {
+  //lxj// 指令比较
   struct cmp {
+    //lxj// 指令比较函数
     bool operator()(const insn_desc_t& lhs, const insn_desc_t& rhs) {
       if (lhs.match == rhs.match)
         return lhs.mask > rhs.mask;
@@ -949,11 +957,13 @@ void processor_t::register_extension(extension_t* x)
 
 void processor_t::register_base_instructions()
 {
+  //lxj// 生成指令操作码和掩码
   #define DECLARE_INSN(name, match, mask) \
     insn_bits_t name##_match = (match), name##_mask = (mask);
   #include "encoding.h"
   #undef DECLARE_INSN
 
+  //lxj// 注册指令
   #define DEFINE_INSN(name) \
     REGISTER_INSN(this, name, name##_match, name##_mask)
   #include "insn_list.h"

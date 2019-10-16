@@ -30,6 +30,7 @@
 # define TARGET_DIR "/" TARGET_ARCH "/bin/"
 #endif
 
+//lxj// 程序中断/异常处理
 static volatile bool signal_exit = false;
 static void handle_signal(int sig)
 {
@@ -85,8 +86,10 @@ void htif_t::start()
 void htif_t::load_program()
 {
   std::string path;
+  //lxj// 指定elf文件路径
   if (access(targs[0].c_str(), F_OK) == 0)
     path = targs[0];
+  //lxj// 在安装路径里寻找elf文件
   else if (targs[0].find('/') == std::string::npos)
   {
     std::string test_path = PREFIX TARGET_DIR + targs[0];

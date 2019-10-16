@@ -79,6 +79,9 @@ public:
   }
 
   // template for functions that load an aligned value from memory
+  //lxj// 若地址没有对齐数据类型，则进行非对齐访问
+  //lxj// 若match_trigger = NULL，TODO
+  //lxj// 在debug_mmu访存中调用load_slow_path
   #define load_func(type) \
     inline type##_t load_##type(reg_t addr) { \
       if (unlikely(addr & (sizeof(type##_t)-1))) \
@@ -194,6 +197,7 @@ public:
   amo_func(uint32)
   amo_func(uint64)
 
+  //lxj// 复位load_reservation_address
   inline void yield_load_reservation()
   {
     load_reservation_address = (reg_t)-1;
@@ -271,8 +275,8 @@ public:
     return refill_icache(addr, &entry)->data;
   }
 
-  void flush_tlb();
-  void flush_icache();
+  void flush_tlb(); //lxj// 复位tlb和icache
+  void flush_icache(); //lxj// 复位icache
 
   void register_memtracer(memtracer_t*);
 
@@ -315,7 +319,7 @@ private:
   reg_t tlb_store_tag[TLB_ENTRIES];
 
   // finish translation on a TLB miss and update the TLB
-  tlb_entry_t refill_tlb(reg_t vaddr, reg_t paddr, char* host_addr, access_type type);
+  tlb_entry_t refill_tlb(reg_t vaddr, reg_t paddr, char* host_addr, access_type type); //lxj// 更新tlb
   const char* fill_from_mmio(reg_t vaddr, reg_t paddr);
 
   // perform a page table walk for a given VA; set referenced/dirty bits
@@ -325,7 +329,7 @@ private:
   tlb_entry_t fetch_slow_path(reg_t addr);
   void load_slow_path(reg_t addr, reg_t len, uint8_t* bytes);
   void store_slow_path(reg_t addr, reg_t len, const uint8_t* bytes);
-  reg_t translate(reg_t addr, reg_t len, access_type type);
+  reg_t translate(reg_t addr, reg_t len, access_type type); //lxj// 将虚拟地址翻译为物理地址
 
   // ITLB lookup
   inline tlb_entry_t translate_insn_addr(reg_t addr) {
@@ -368,7 +372,7 @@ private:
   }
 
   reg_t pmp_homogeneous(reg_t addr, reg_t len);
-  reg_t pmp_ok(reg_t addr, reg_t len, access_type type, reg_t mode);
+  reg_t pmp_ok(reg_t addr, reg_t len, access_type type, reg_t mode); //lxj// 检查pmp是否已经准备好内存访问
 
   bool check_triggers_fetch;
   bool check_triggers_load;
@@ -379,6 +383,7 @@ private:
   friend class processor_t;
 };
 
+//lxj// 内存页信息
 struct vm_info {
   int levels;
   int idxbits;
@@ -386,6 +391,7 @@ struct vm_info {
   reg_t ptbase;
 };
 
+//lxj// 提取内存页信息
 inline vm_info decode_vm_info(int xlen, reg_t prv, reg_t satp)
 {
   if (prv == PRV_M) {

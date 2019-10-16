@@ -31,7 +31,7 @@ class cache_sim_t
   void set_miss_handler(cache_sim_t* mh) { miss_handler = mh; }
   void set_log(bool _log) { log = _log; }
 
-  static cache_sim_t* construct(const char* config, const char* name);
+  static cache_sim_t* construct(const char* config, const char* name); //lxj// cache工厂
 
  protected:
   static const uint64_t VALID = 1ULL << 63;
@@ -43,12 +43,12 @@ class cache_sim_t
   lfsr_t lfsr;
   cache_sim_t* miss_handler;
 
-  size_t sets;
+  size_t sets; //lxj// sets和linesz必须为2的幂
   size_t ways;
-  size_t linesz;
-  size_t idx_shift;
+  size_t linesz; //lxj// blocksize，必须为2的幂
+  size_t idx_shift; //lxj// linesz的有效位宽度-2
 
-  uint64_t* tags;
+  uint64_t* tags; //lxj// uint64_t[sets*ways]
   
   uint64_t read_accesses;
   uint64_t read_misses;
@@ -61,7 +61,7 @@ class cache_sim_t
   std::string name;
   bool log;
 
-  void init();
+  void init(); //lxj// 初始化
 };
 
 class fa_cache_sim_t : public cache_sim_t
@@ -103,6 +103,8 @@ class icache_sim_t : public cache_memtracer_t
 {
  public:
   icache_sim_t(const char* config) : cache_memtracer_t(config, "I$") {}
+
+  //lxj// 此设备只能用于获取指令访问
   bool interested_in_range(uint64_t begin, uint64_t end, access_type type)
   {
     return type == FETCH;
@@ -117,6 +119,8 @@ class dcache_sim_t : public cache_memtracer_t
 {
  public:
   dcache_sim_t(const char* config) : cache_memtracer_t(config, "D$") {}
+
+  //lxj// 此设备只能用于加载或存储数据访问
   bool interested_in_range(uint64_t begin, uint64_t end, access_type type)
   {
     return type == LOAD || type == STORE;

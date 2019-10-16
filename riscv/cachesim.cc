@@ -12,6 +12,7 @@ cache_sim_t::cache_sim_t(size_t _sets, size_t _ways, size_t _linesz, const char*
   init();
 }
 
+//lxj// cache参数的帮助信息
 static void help()
 {
   std::cerr << "Cache configurations must be of the form" << std::endl;
@@ -39,11 +40,13 @@ cache_sim_t* cache_sim_t::construct(const char* config, const char* name)
 
 void cache_sim_t::init()
 {
-  if(sets == 0 || (sets & (sets-1)))
+  //lxj// sets和linesz必须为2的幂
+  if(sets == 0 || (sets & (sets-1))) 
     help();
   if(linesz < 8 || (linesz & (linesz-1)))
     help();
 
+  //lxj// idx_shift=linesz的有效位宽度-2
   idx_shift = 0;
   for (size_t x = linesz; x>1; x >>= 1)
     idx_shift++;

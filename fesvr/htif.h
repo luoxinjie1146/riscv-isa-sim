@@ -48,15 +48,15 @@ class htif_t : public chunked_memif_t
   virtual bool is_address_preloaded(addr_t taddr, size_t len) { return false; }
 
  private:
-  void parse_arguments(int argc, char ** argv);
-  void register_devices();
-  void usage(const char * program_name);
+  void parse_arguments(int argc, char ** argv); //lxj// 分析提取命令行选项
+  void register_devices(); //lxj// 将syscall、bcd、dynamic_device注册进入设备列表
+  void usage(const char * program_name); //lxj// 打印帮助信息
 
   memif_t mem;
   reg_t entry;
   bool writezeros;
   std::vector<std::string> hargs;
-  std::vector<std::string> targs;
+  std::vector<std::string> targs; //lxj// elf文件路径
   std::string sig_file;
   addr_t sig_addr; // torture
   addr_t sig_len; // torture

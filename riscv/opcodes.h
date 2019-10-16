@@ -5,14 +5,17 @@
 #define S0      8
 #define S1      9
 
+//lxj// 返回value[hi, lo]
 static uint32_t bits(uint32_t value, unsigned int hi, unsigned int lo) {
   return (value >> lo) & ((1 << (hi+1-lo)) - 1);
 }
 
+//lxj// 返回value[b]
 static uint32_t bit(uint32_t value, unsigned int b) {
   return (value >> b) & 1;
 }
 
+//lxj// 返回jal指令的二进制码
 static uint32_t jal(unsigned int rd, uint32_t imm) __attribute__ ((unused));
 static uint32_t jal(unsigned int rd, uint32_t imm) {
   return (bit(imm, 20) << 31) |
@@ -168,6 +171,7 @@ static uint32_t fld(unsigned int dest, unsigned int base, uint16_t offset)
     MATCH_FLD;
 }
 
+//lxj// 返回ebreak指令的二进制码
 static uint32_t ebreak(void) __attribute__ ((unused));
 static uint32_t ebreak(void) { return MATCH_EBREAK; }
 static uint32_t ebreak_c(void) __attribute__ ((unused));

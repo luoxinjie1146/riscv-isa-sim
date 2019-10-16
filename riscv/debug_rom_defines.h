@@ -16,7 +16,7 @@
 #define DEBUG_ROM_FLAG_RESUME 1
 
 // These needs to match the link.ld         
-#define DEBUG_ROM_WHERETO 0x300
+#define DEBUG_ROM_WHERETO 0x300 //lxj// 此地址的4字节ROM存储调试程序的地址
 #define DEBUG_ROM_ENTRY   0x800
 #define DEBUG_ROM_TVEC    0x808
 

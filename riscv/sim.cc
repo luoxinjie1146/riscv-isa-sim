@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
+//lxj// 程序异常、中断函数
 volatile bool ctrlc_pressed = false;
 static void handle_signal(int sig)
 {
@@ -177,6 +178,7 @@ void sim_t::make_dtb()
 
   start_pc = start_pc == reg_t(-1) ? get_entry_point() : start_pc;
 
+  //lxj// 程序启动点
   uint32_t reset_vec[reset_vec_size] = {
     0x297,                                      // auipc  t0,0x0
     0x28593 + (reset_vec_size * 4 << 20),       // addi   a1, t0, &dtb
@@ -204,7 +206,7 @@ void sim_t::make_dtb()
 }
 
 char* sim_t::addr_to_mem(reg_t addr) {
-  auto desc = bus.find_device(addr);
+  auto desc = bus.find_device(addr); //lxj// std::pair<reg_t, abstract_device_t*>
   if (auto mem = dynamic_cast<mem_t*>(desc.second))
     if (addr - desc.first < mem->size())
       return mem->contents() + (addr - desc.first);

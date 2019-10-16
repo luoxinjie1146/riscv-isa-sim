@@ -42,8 +42,8 @@ public:
     this->remote_bitbang = remote_bitbang;
   }
   const char* get_dts() { if (dts.empty()) reset(); return dts.c_str(); }
-  processor_t* get_core(size_t i) { return procs.at(i); }
-  unsigned nprocs() const { return procs.size(); }
+  processor_t* get_core(size_t i) { return procs.at(i); } //lxj// 返回线程i
+  unsigned nprocs() const { return procs.size(); } //lxj// 返回线程数
 
   // Callback for processors to let the simulation know they were reset.
   void proc_reset(unsigned id);
@@ -54,10 +54,10 @@ private:
   mmu_t* debug_mmu;  // debug port into main memory
   std::vector<processor_t*> procs;
   reg_t start_pc;
-  std::string dts;
+  std::string dts; //lxj// dts信息
   std::unique_ptr<rom_device_t> boot_rom;
   std::unique_ptr<clint_t> clint;
-  bus_t bus;
+  bus_t bus; //lxj// 总线上连接存储器、外设、debug_module
 
   processor_t* get_core(const std::string& i);
   void step(size_t n); // step through simulation
@@ -74,8 +74,8 @@ private:
   remote_bitbang_t* remote_bitbang;
 
   // memory-mapped I/O routines
-  char* addr_to_mem(reg_t addr);
-  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes);
+  char* addr_to_mem(reg_t addr); //lxj// 读取存储器addr中的值
+  bool mmio_load(reg_t addr, size_t len, uint8_t* bytes); //lxj// 读取总线上的外设数据至bytes
   bool mmio_store(reg_t addr, size_t len, const uint8_t* bytes);
   void make_dtb();
 

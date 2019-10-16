@@ -20,12 +20,13 @@ class trap_t;
 class extension_t;
 class disassembler_t;
 
+//lxj// 指令
 struct insn_desc_t
 {
-  insn_bits_t match;
-  insn_bits_t mask;
-  insn_func_t rv32;
-  insn_func_t rv64;
+  insn_bits_t match; //lxj// 指令操作码
+  insn_bits_t mask; //lxj// 指令掩码
+  insn_func_t rv32; //lxj// 32位指令行为
+  insn_func_t rv64; //lxj// 64位指令行为
 };
 
 struct commit_log_reg_t
@@ -162,10 +163,12 @@ class vectorUnit_t {
     processor_t* p;
     void *reg_file;
     char reg_referenced[NVPR];
-    int setvl_count;
-    reg_t reg_mask, vlmax, vmlen;
+    int setvl_count; //lxj// 调用set_vl设置vl寄存器的次数
+    reg_t reg_mask; //lxj// 在LMUL模式下，可行的矢量寄存器首地址
+    reg_t vlmax, vmlen;
     reg_t vstart, vxrm, vxsat, vl, vtype;
-    reg_t vediv, vsew, vlmul;
+    reg_t vediv; //lxj// 当前spike不支持ediv扩展
+    reg_t vsew, vlmul;
     reg_t ELEN, VLEN, SLEN;
     bool vill;
 
@@ -184,7 +187,7 @@ class vectorUnit_t {
       }
   public:
 
-    void reset();
+    void reset(); //lxj// 复位
 
     vectorUnit_t(){
       reg_file = 0;
@@ -195,11 +198,11 @@ class vectorUnit_t {
       reg_file = 0;
     }
 
-    reg_t set_vl(uint64_t regId, reg_t reqVL, reg_t newType);
+    reg_t set_vl(uint64_t regId, reg_t reqVL, reg_t newType); //lxj// 设置vl、vtype寄存器
 
-    reg_t get_vlen() { return VLEN; }
-    reg_t get_elen() { return ELEN; }
-    reg_t get_slen() { return SLEN; }
+    reg_t get_vlen() { return VLEN; } //lxj// 返回一个矢量寄存器的位宽
+    reg_t get_elen() { return ELEN; } //lxj// 返回矢量寄存器中的元素的最大位宽
+    reg_t get_slen() { return SLEN; } //lxj// 返回当LMUL>1时，在一个矢量寄存器中连续存储的数据位宽
 
     VRM get_vround_mode() {
       return (VRM)vxrm;
@@ -209,7 +212,7 @@ class vectorUnit_t {
 // architectural state of a RISC-V hart
 struct state_t
 {
-  void reset(reg_t max_isa);
+  void reset(reg_t max_isa); //lxj// 复位
 
   static const int num_triggers = 4;
 
@@ -300,7 +303,7 @@ public:
   void set_histogram(bool value);
   void set_log_commits(bool value);
   bool get_log_commits() { return log_commits_enabled; }
-  void reset();
+  void reset(); //lxj// 复位
   void step(size_t n); // run for n cycles
   void set_csr(int which, reg_t val);
   reg_t get_csr(int which);
@@ -326,13 +329,13 @@ public:
     if (unlikely(pc & ~pc_alignment_mask()))
       throw trap_instruction_address_misaligned(pc);
   }
-  reg_t legalize_privilege(reg_t);
+  reg_t legalize_privilege(reg_t); //lxj// 返回合法的特权模式
   void set_privilege(reg_t);
   void update_histogram(reg_t pc);
   const disassembler_t* get_disassembler() { return disassembler; }
 
-  void register_insn(insn_desc_t);
-  void register_extension(extension_t*);
+  void register_insn(insn_desc_t); //lxj// 注册指令
+  void register_extension(extension_t*); //lxj// 设置ext，注册扩展库的指令
 
   // MMIO slave interface
   bool load(reg_t addr, size_t len, uint8_t* bytes);
@@ -436,13 +439,13 @@ private:
   uint32_t id;
   unsigned max_xlen;
   unsigned xlen;
-  reg_t max_isa;
+  reg_t max_isa; //lxj// 等于state.misa
   std::string isa_string;
   bool histogram_enabled;
   bool log_commits_enabled;
   bool halt_on_reset;
 
-  std::vector<insn_desc_t> instructions;
+  std::vector<insn_desc_t> instructions; //lxj// 所有合法指令
   std::map<reg_t,uint64_t> pc_histogram;
 
   static const size_t OPCODE_CACHE_SIZE = 8191;
@@ -462,8 +465,8 @@ private:
 
   void parse_varch_string(const char* isa);
   void parse_isa_string(const char* isa);
-  void build_opcode_map();
-  void register_base_instructions();
+  void build_opcode_map(); //lxj// 指令排序，并将指令缓存初始化
+  void register_base_instructions(); //lxj// 注册所有指令，注册非法指令，指令缓存初始化，指令排序
   insn_func_t decode_insn(insn_t insn);
 
   // Track repeated executions for processor_t::disasm()
@@ -474,6 +477,7 @@ public:
 
 reg_t illegal_instruction(processor_t* p, insn_t insn, reg_t pc);
 
+//lxj// 注册指令
 #define REGISTER_INSN(proc, name, match, mask) \
   extern reg_t rv32_##name(processor_t*, insn_t, reg_t); \
   extern reg_t rv64_##name(processor_t*, insn_t, reg_t); \
